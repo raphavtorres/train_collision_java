@@ -1,50 +1,126 @@
+import java.sql.Date;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
-    public static double testInput() {
-        return 0.0;
+    static Scanner scanner = new Scanner(System.in);
+
+    static double testNegative(Scanner scanner) {
+        double value = scanner.nextDouble();
+        if (value < 0) {
+            throw new InputMismatchException();
+        }
+        return value;
+    }
+
+    public static double testSpeed(double speed) {
+        if (speed > 300 || speed <= 0) {
+            throw new InputMismatchException("Speed value needs to be between 0 - 300 km/h");
+        }
+        return speed;
+    }
+
+    public static double testPosition(double position) {
+        if (position > 300 || position < 0) {
+            throw new InputMismatchException("Position value needs to be between 0 - 10.000 km");
+        }
+        return position;
     }
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            // Declaring variables
+            double posA = 0.0, posB = 0.0, speedA = 0.0, speedB = 0.0, timeHour = 0.0;
+            int timeSecond, exHour, exMinute;
 
-        double posA, posB, speedA, speedB, resultTime, resultPos, time;
+            // Getting user input and testing it
+            boolean posWrong = true, speedWrong = true;
 
-//        Extremidades da ferrovia vão do KM 0 até KM 10.000 - S = 10.000
-//        Velocidade trem A +  e trem B-
-        System.out.println("Position A (0 - 10.000 km): ");
-        posA = scanner.nextDouble();
-        System.out.println("Position B (0 - 10.000 km): ");
-        posB = scanner.nextDouble();
+            // Testing position
+            while (posWrong) {
+                try {
+                    System.out.print("Position A (0 - 10.000 km): ");
+                    posA = testNegative(scanner);
+                    testPosition(posA);
 
-        System.out.println("Speed A (0 - 300 km): ");
-        speedA = scanner.nextDouble();
-        System.out.println("Speed B (0 - 300 km): ");
-        speedB = scanner.nextDouble();
+                    System.out.print("Position B (0 - 10.000 km): ");
+                    posB = testNegative(scanner);
+                    testPosition(posB);
+                } catch (java.util.InputMismatchException e) {
+                    System.out.println(e.getMessage());
+                    scanner.nextLine();
+                    continue;
+                }
+                posWrong = false;
+            }
+            // Testing speed
+            while (speedWrong) {
+                try {
+                    System.out.print("Speed A (0 - 300 km/h): ");
+                    speedA = testNegative(scanner);
+                    testSpeed(speedA);
 
+                    System.out.print("Speed B (0 - 300 km/h): ");
+                    speedB = testNegative(scanner);
+                    testSpeed(speedB);
+                    speedWrong = false;
+                } catch (java.util.InputMismatchException e) {
+                    System.out.println(e.getMessage());
+                    System.out.println();
+                    scanner.nextLine();
+                    continue;
+                }
+                speedWrong = false;
+            }
 
-        // ΔT = ΔS/Vm
-        time = (posA - posB) / (speedA - speedB);
-        // v = Δs/Δt
-        // S = S0 + v . t
-        double Sa = posA + speedA * time;
+            // Example values
+            exHour = 17;
+            exMinute = 0;
 
-//        ENTRADA DEVE ACEITAR APENAS NÚMEROS - CRIAR FUNÇÃO PARA ISSO
-//        PRINT DE RESPOSTA
+            // ΔT = ΔS/Vm
+            timeHour = (posA - posB) / (speedA + speedB);
+            if (timeHour < 0) {
+                timeHour *= -1;
+            }
+            System.out.println(timeHour);
+            timeSecond = (int) (timeHour * 3600);
 
-//
-//        Módulo da velocidade do trem será no máximo 300km/h
-//        Variáveis de entrada ==> velA velB posA posB
-//        posCol ? timeCol ?
+            // S = S0 + v . t
+            speedA = posA > posB ? (speedA * -1) : (speedA);
+            double S = posA + speedA * timeHour;
+            System.out.println(S); // ok
 
-//        Requisitos:
-//        se posição > 10.000 ou < 0 --> mensagem de erro "Posição inválida"
-//        Módulo de vel no máximo 300 km/h
-//        Testar velocidades
-//        Permitir executar novamente
-//        Fazer partida as 17h e mostre o horário no formato == 00:00:00
-//        Na situação expecifica q os trens não colidem AVISAR
-        System.out.println("The trains collision will happen in the kilometer X, after TIME seconds");
+            exHour += (int) (timeHour);
+
+            if (timeHour % 60 != 0) {
+                exMinute += timeSecond / 60;
+                while (exMinute >= 60) {
+                    exHour++;
+                    exMinute -= 60;
+                }
+            }
+
+            LocalTime time = LocalTime.of(exHour, exMinute, 0);
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("HH:mm:ss");
+            String timeFormated = time.format(format);
+
+            System.out.println(" \n\n--- ANSWER --- \n");
+            System.out.println("The trains collision will happen in the kilometer " + S + ", after " + timeSecond
+                    + " seconds, at " + timeFormated);
+
+            
+            System.out.println();
+            System.out.println("Do you want do repeat the program?\n[Y]es [N]o");
+            String quit = scanner.next().toLowerCase();
+            if (quit == "y") break;
+        }
+
         System.out.println("PROGRAM END");
+
+        // Na situação expecifica q os trens não colidem AVISAR
+
+        scanner.close();
     }
 }
