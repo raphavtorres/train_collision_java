@@ -1,4 +1,3 @@
-import java.sql.Date;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.InputMismatchException;
@@ -16,21 +15,23 @@ public class Main {
     }
 
     public static double testSpeed(double speed) {
-        if (speed > 300 || speed <= 0) {
+        if (speed > 300 || speed < 0) {
             throw new InputMismatchException("Speed value needs to be between 0 - 300 km/h");
         }
         return speed;
     }
 
     public static double testPosition(double position) {
-        if (position > 300 || position < 0) {
+        if (position > 10_000 || position < 0) {
             throw new InputMismatchException("Position value needs to be between 0 - 10.000 km");
         }
         return position;
     }
 
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
         while (true) {
+            
             // Declaring variables
             double posA = 0.0, posB = 0.0, speedA = 0.0, speedB = 0.0, timeHour = 0.0;
             int timeSecond, exHour, exMinute;
@@ -75,6 +76,11 @@ public class Main {
                 speedWrong = false;
             }
 
+            if (speedA == 0 && speedB == 0) {
+                System.out.println("The trains are stopped, so there was no collision...");
+                continue;
+            }
+
             // Example values
             exHour = 17;
             exMinute = 0;
@@ -84,22 +90,23 @@ public class Main {
             if (timeHour < 0) {
                 timeHour *= -1;
             }
-            System.out.println(timeHour);
+
             timeSecond = (int) (timeHour * 3600);
 
             // S = S0 + v . t
             speedA = posA > posB ? (speedA * -1) : (speedA);
             double S = posA + speedA * timeHour;
-            System.out.println(S); // ok
 
             exHour += (int) (timeHour);
 
             if (timeHour % 60 != 0) {
                 exMinute += timeSecond / 60;
                 while (exMinute >= 60) {
-                    exHour++;
                     exMinute -= 60;
                 }
+            }
+            if (exHour > 24) {
+                exHour = exHour - 24;
             }
 
             LocalTime time = LocalTime.of(exHour, exMinute, 0);
@@ -107,20 +114,19 @@ public class Main {
             String timeFormated = time.format(format);
 
             System.out.println(" \n\n--- ANSWER --- \n");
-            System.out.println("The trains collision will happen in the kilometer " + S + ", after " + timeSecond
-                    + " seconds, at " + timeFormated);
+            System.out.printf("The trains collision will happen in the kilometer %.2f after %d seconds, at %s", S,
+                    timeSecond, timeFormated);
 
-            
             System.out.println();
             System.out.println("Do you want do repeat the program?\n[Y]es [N]o");
-            String quit = scanner.next().toLowerCase();
-            if (quit == "y") break;
+            String quit = sc.next().toLowerCase();
+            if (quit.equals("n")) {
+                break;
+            }
         }
 
         System.out.println("PROGRAM END");
-
-        // Na situação expecifica q os trens não colidem AVISAR
-
+        sc.close();
         scanner.close();
     }
 }
